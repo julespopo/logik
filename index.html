@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logik — entraîne ton esprit logique</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon.svg"><meta name="theme-color" content="#f5f2ea"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Logik">
+<meta name="description" content="Des énigmes de logique à enchaîner, une par écran. Réponds, comprends, passe à la suivante.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f2ea;--card:#fffdf8;--ink:#17161c;--muted:#6b6874;--line:#e3ded2;--accent:#4b2ef0;--soft:#e9e5ff;--good:#1f8a5b;--good-soft:#e2f4ea;--bad:#c8452f;--bad-soft:#fbe7e2;--gold:#f2b632}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.display{font-family:"Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em}
+
+/* En-tête flottant */
+.hud{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;max-width:560px;margin:0 auto;pointer-events:none}
+.brand{display:flex;align-items:center;gap:7px;font:800 20px "Bricolage Grotesque",sans-serif}
+.brand i{width:24px;height:24px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px}
+.stats{display:flex;gap:6px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 10px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:4px}
+.pill.hot{background:#fff4dc;border-color:#f5d68a}
+.lvl{display:inline-flex;gap:2px}.lvl b{width:5px;height:12px;border-radius:2px;background:var(--line)}.lvl b.on{background:var(--accent)}
+
+/* Fil vertical */
+.feed{position:fixed;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.card{height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:flex;justify-content:center}
+.inner{width:100%;max-width:560px;padding:64px 18px 22px;display:flex;flex-direction:column}
+.meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.chip{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);background:var(--soft);padding:5px 10px;border-radius:99px}
+.clock{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.q{font:700 22px/1.25 "Bricolage Grotesque",sans-serif;margin:4px 0 14px}
+.q small{display:block;font:500 15px/1.45 Inter,sans-serif;color:var(--muted);margin-top:8px}
+.facts{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 14px;font-size:16px;line-height:1.6}
+.seq{font:800 clamp(24px,7vw,30px) "Bricolage Grotesque",sans-serif;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 10px;text-align:center;margin-bottom:14px;word-spacing:3px}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px;margin:0 auto 14px;width:min(100%,250px)}
+.matrix>div{aspect-ratio:1;border-radius:9px;background:var(--bg);display:grid;place-items:center}
+.miss{border:2px dashed var(--accent);background:var(--soft)!important;color:var(--accent);font:800 24px "Bricolage Grotesque",sans-serif}
+svg.g{width:100%;height:100%;max-width:64px}
+.spacer{flex:1;min-height:6px;max-height:40px}
+
+/* Réponses à choix */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.opts.one{grid-template-columns:1fr}
+.opt{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 10px;min-height:56px;font-weight:600;font-size:16px;text-align:center;display:grid;place-items:center}
+.opt.svg{padding:6px;height:76px}
+.opt:active{border-color:var(--accent);background:var(--soft)}
+
+/* Pavé numérique */
+.screen{display:flex;align-items:center;justify-content:center;height:56px;border-radius:14px;background:var(--card);border:1.5px solid var(--accent);font:800 28px "Bricolage Grotesque",sans-serif;margin-bottom:9px;font-variant-numeric:tabular-nums}
+.screen:empty:before{content:"?";color:#c9c4d8}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pad button{height:50px;border-radius:12px;border:1px solid var(--line);background:var(--card);font:700 21px Inter,sans-serif}
+.pad button:active{background:var(--soft)}
+.pad .ok{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Retour */
+.fb{border-radius:16px;padding:16px;animation:pop .25s ease}
+.fb.good{background:var(--good-soft);color:#11553a;text-align:center;font:800 22px "Bricolage Grotesque",sans-serif}
+.fb.good small{display:block;font:600 14px Inter,sans-serif;opacity:.8;margin-top:2px}
+.fb.bad{background:var(--bad-soft)}
+.fb.bad .t{font:800 19px "Bricolage Grotesque",sans-serif;color:var(--bad);margin-bottom:6px}
+.fb.bad .ans{font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fb.bad .ans .mini{width:56px;height:56px;background:var(--card);border-radius:10px;display:grid;place-items:center}
+.fb.bad p{margin:0;font-size:15px;color:#4a3a36}
+.next{margin-top:12px;width:100%;border:0;border-radius:14px;background:var(--ink);color:#fff;padding:14px;font-weight:700;font-size:16px}
+.skiphint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+
+/* Carte d'accueil */
+.welcome .inner{justify-content:center}
+.welcome h1{font:800 clamp(42px,12vw,60px)/.98 "Bricolage Grotesque",sans-serif;margin:0 0 16px;letter-spacing:-.03em}
+.welcome h1 em{font-style:normal;color:var(--accent)}
+.welcome p{color:var(--muted);font-size:17px;margin:0 0 22px}
+.how{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.how div{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:500}
+.how span{font-size:22px;width:28px;text-align:center}
+.swipe{text-align:center;color:var(--accent);font-weight:700;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.best{margin-top:18px;text-align:center;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="hud">
+  <div class="brand"><i>◆</i>logik</div>
+  <div class="stats">
+    <span class="pill" id="streakPill">🔥 <span id="streak">0</span></span>
+    <span class="pill">⚡ <span id="points">0</span></span>
+    <span class="pill" aria-label="Niveau"><span class="lvl" id="lvl"><b></b><b></b><b></b></span></span>
+  </div>
+</div>
+<div class="feed" id="feed"></div>
+
+<script>
+/* ========== Outils ========== */
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+function nearNums(ans,n=3){
+  const c=shuffle([ans+1,ans-1,ans+2,ans-2,ans+10,ans-10,ans+5,ans*2,Math.round(ans/2),ans+3]).filter(x=>x>0&&x!==ans);
+  return [...new Set(c)].slice(0,n);
+}
+
+/* ========== Figures ========== */
+const fillA=f=>f?'fill="var(--ink)"':'fill="none" stroke="var(--ink)" stroke-width="3"';
+const pts=(n,cx,cy,r)=>Array.from({length:n},(_,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;return (cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1)}).join(' ');
+function shp(t,cx,cy,r,f){
+  if(t==='circle')return `<circle cx="${cx}" cy="${cy}" r="${r}" ${fillA(f)}/>`;
+  if(t==='square')return `<rect x="${cx-r*.85}" y="${cy-r*.85}" width="${r*1.7}" height="${r*1.7}" rx="2" ${fillA(f)}/>`;
+  const n=t==='triangle'?3:t==='pentagon'?5:6;
+  return `<polygon points="${pts(n,cx,cy,r*(n===3?1.15:1))}" ${fillA(f)} stroke-linejoin="round"/>`;
+}
+const box=s=>`<svg class="g" viewBox="0 0 60 60" aria-hidden="true">${s}</svg>`;
+function dots(n,t='circle',f=true){
+  const rows=Math.ceil(n/3),gap=17,r=n>3?6:7;let s='';
+  for(let i=0;i<n;i++){const row=Math.floor(i/3),inRow=row===rows-1?n-row*3:3,col=i%3;
+    s+=shp(t,30+(col-(inRow-1)/2)*gap,30+(row-(rows-1)/2)*gap,r,f)}
+  return box(s);
+}
+const big=(t,f)=>box(shp(t,30,30,19,f));
+const arrow=d=>box(`<g transform="rotate(${d} 30 30)"><path d="M30 9 L45 28 H35 V51 H25 V28 H15 Z" fill="var(--ink)"/></g>`);
+const grid=cells=>`<div class="matrix">${cells.map(c=>c?`<div>${c}</div>`:'<div class="miss">?</div>').join('')}</div>`;
+const SHAPES=['circle','square','triangle','pentagon','hexagon'];
+
+/* ========== Générateurs d'énigmes ==========
+   Chaque générateur renvoie { cat, q, fig?, facts?, input:'pad'|'mcq', ans, opts?, svg?, expl } */
+const GEN={
+  suite(L){
+    let t=[],ans,expl,n=5;
+    const kind=L===1?pick(['ari','geo','dec']):L===2?pick(['alt','inc','sq']):pick(['lin','fib','inter','prod']);
+    if(kind==='ari'){const a=ri(1,20),d=ri(2,9);t=Array.from({length:n},(_,i)=>a+i*d);ans=a+n*d;expl=`On ajoute ${d} à chaque fois : ${t[n-1]} + ${d} = ${ans}.`}
+    if(kind==='dec'){const a=ri(70,99),d=ri(3,9);t=Array.from({length:n},(_,i)=>a-i*d);ans=a-n*d;expl=`On retire ${d} à chaque fois : ${t[n-1]} − ${d} = ${ans}.`}
+    if(kind==='geo'){const a=ri(1,4),r=pick([2,3]);t=Array.from({length:n},(_,i)=>a*r**i);ans=a*r**n;expl=`On multiplie par ${r} à chaque fois : ${t[n-1]} × ${r} = ${ans}.`}
+    if(kind==='alt'){const p=ri(4,9),m=ri(1,p-2);let v=ri(5,30);n=6;for(let i=0;i<n;i++){t.push(v);v+=i%2?-m:p}ans=v;expl=`On alterne +${p} et −${m}. Après ${t[n-1]}, on fait ${n%2?'−'+m:'+'+p} : ${ans}.`}
+    if(kind==='inc'){const k=ri(1,3);let d=ri(1,4),v=ri(1,10);const ds=[];for(let i=0;i<n;i++){t.push(v);ds.push(d);v+=d;d+=k}ans=v;expl=`Les écarts augmentent de ${k} : +${ds.slice(0,n-1).join(', +')}, puis +${ds[n-1]}. ${t[n-1]} + ${ds[n-1]} = ${ans}.`}
+    if(kind==='sq'){const s=ri(1,5),c=pick([0,1,-1,2]);t=Array.from({length:n},(_,i)=>(s+i)**2+c);ans=(s+n)**2+c;expl=`Ce sont des carrés${c?` ${c>0?'+':'−'} ${Math.abs(c)}`:''} : ${s}², ${s+1}², ${s+2}²… puis ${s+n}² = ${(s+n)**2}${c?`, ${c>0?'+':'−'} ${Math.abs(c)} = ${ans}`:''}.`}
+    if(kind==='lin'){const m=pick([2,3]),b=pick([1,-1,2]);let v=ri(2,5);for(let i=0;i<n;i++){t.push(v);v=v*m+b}ans=v;expl=`Chaque nombre est le précédent × ${m} ${b>0?'+':'−'} ${Math.abs(b)} : ${t[n-1]} × ${m} ${b>0?'+':'−'} ${Math.abs(b)} = ${ans}.`}
+    if(kind==='fib'){let a=ri(1,5),b=ri(2,7);n=6;t=[a,b];while(t.length<n)t.push(t.at(-1)+t.at(-2));ans=t.at(-1)+t.at(-2);expl=`Chaque nombre est la somme des deux précédents : ${t[n-2]} + ${t[n-1]} = ${ans}.`}
+    if(kind==='inter'){const a=ri(1,9),da=ri(2,5),b=ri(25,40),db=ri(1,3);n=6;for(let i=0;i<n;i++)t.push(i%2?b-((i-1)/2)*db:a+(i/2)*da);ans=a+3*da;expl=`Deux suites sont mélangées. Rangs impairs : ${a}, ${a+da}, ${a+2*da} (+${da}). Rangs pairs : ${b}, ${b-db}, ${b-2*db} (−${db}). Le suivant est ${a+2*da} + ${da} = ${ans}.`}
+    if(kind==='prod'){const s=ri(1,4);t=Array.from({length:n},(_,i)=>(s+i)*(s+i+1));ans=(s+n)*(s+n+1);expl=`Ce sont des produits de deux nombres qui se suivent : ${s}×${s+1}, ${s+1}×${s+2}… puis ${s+n}×${s+n+1} = ${ans}.`}
+    return {cat:'Suites',q:'Quel nombre vient ensuite ?',fig:`<div class="seq">${t.join(' · ')} · ?</div>`,input:'pad',ans,expl};
+  },
+  calcul(L){
+    let q,ans,expl;
+    const kind=L===1?pick(['add','m1']):L===2?pick(['m2','pct','sub']):pick(['m3','pct15','div']);
+    if(kind==='add'){const a=ri(12,89),b=ri(12,89);ans=a+b;q=`${a} + ${b}`;expl=`Dizaines : ${a-a%10} + ${b-b%10} = ${a-a%10+b-b%10}. Unités : ${a%10} + ${b%10} = ${a%10+b%10}. Total : ${ans}.`}
+    if(kind==='m1'){const a=ri(3,9),b=ri(11,19);ans=a*b;q=`${a} × ${b}`;expl=`${a} × ${b} = ${a} × 10 + ${a} × ${b-10} = ${a*10} + ${a*(b-10)} = ${ans}.`}
+    if(kind==='m2'){const a=ri(3,9),b=ri(21,99);ans=a*b;const d=b-b%10;q=`${a} × ${b}`;expl=`${a} × ${b} = ${a} × ${d} + ${a} × ${b%10} = ${a*d} + ${a*(b%10)} = ${ans}.`}
+    if(kind==='sub'){const a=ri(101,199),b=ri(23,89);ans=a-b;q=`${a} − ${b}`;expl=`${a} − ${b} = ${a} − ${b+(10-b%10)%10} + ${(10-b%10)%10} = ${ans}.`}
+    if(kind==='pct'){const p=pick([10,20,25,50,75]),base=ri(2,20)*20;ans=base*p/100;q=`${p} % de ${base}`;const h={10:'on divise par 10',20:'10 %, puis × 2',25:'on divise par 4',50:'on divise par 2',75:'la moitié + le quart'}[p];expl=`Pour ${p} %, ${h} : ${ans}.`}
+    if(kind==='m3'){const a=ri(12,29),b=ri(11,19);ans=a*b;q=`${a} × ${b}`;expl=`${a} × ${b} = ${a} × 10 + ${a} × ${b-10} = ${a*10} + ${a*(b-10)} = ${ans}.`}
+    if(kind==='pct15'){const base=ri(2,30)*20;ans=base*15/100;q=`15 % de ${base}`;expl=`15 % = 10 % + 5 %. 10 % de ${base} = ${base/10}, 5 % = ${base/20}. Total : ${ans}.`}
+    if(kind==='div'){const a=ri(6,9),b=ri(12,25);ans=b;q=`${a*b} ÷ ${a}`;expl=`${a} × ${b} = ${a*b}, donc ${a*b} ÷ ${a} = ${b}.`}
+    return {cat:'Calcul rapide',q:'Calcule de tête',fig:`<div class="seq">${q} = ?</div>`,input:'pad',ans,expl};
+  },
+  grille(L){
+    const kind=L===1?pick(['count','rot']):L===2?pick(['rot45','latin','inc']):pick(['latin','inc','rot45']);
+    let cells=[],ans,opts,expl;
+    if(kind==='count'){const sh=shuffle(SHAPES).slice(0,3),s=ri(1,2);
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)cells.push(dots(s+c,sh[r]));
+      ans=dots(s+2,sh[2]);opts=[dots(s+1,sh[2]),dots(s+2,sh[1]),dots(s+3,sh[2])];
+      expl=`Chaque ligne garde la même forme et gagne un élément par colonne : la dernière case contient ${s+2} formes de la 3e ligne.`}
+    if(kind==='rot'||kind==='rot45'){const st=kind==='rot'?90:45,s0=ri(0,7)*45;
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)cells.push(arrow(s0+(r+c)*st));
+      const a=s0+4*st;ans=arrow(a);opts=[arrow(a+st),arrow(a-st),arrow(a+180)];
+      expl=`La flèche tourne de ${st}° vers la droite à chaque case, et chaque ligne commence un cran plus loin. La dernière case est tournée de ${st}° par rapport à sa voisine de gauche.`}
+    if(kind==='latin'){const sh=shuffle(SHAPES).slice(0,3),fc=ri(0,2);
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)cells.push(big(sh[(r+c)%3],c===fc));
+      const s=sh[1],f=fc===2;ans=big(s,f);opts=[big(s,!f),big(sh[0],f),big(sh[2],f)];
+      expl=`Chaque ligne contient une fois chaque forme, et seule la colonne ${fc+1} est pleine. Il manque donc la forme absente de la dernière ligne, ${f?'pleine':'vide'}.`}
+    if(kind==='inc'){const s=ri(1,2);
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)cells.push(dots(s+r+c));
+      ans=dots(s+4);opts=[dots(s+3),dots(s+5),dots(s+2)];
+      expl=`On ajoute un point vers la droite et un point vers le bas : la dernière case en a ${s+4}.`}
+    cells[8]=null;
+    return {cat:'Logique visuelle',q:'Quelle case complète la grille ?',fig:grid(cells),input:'mcq',svg:true,ans,opts,expl};
+  },
+  intrus(L){
+    const props=L===1?['pair','m5']:L===2?['mk','carre']:['premier','mk','somme'];
+    const p=pick(props);let mem=new Set(),out,name,why;
+    const primes=[11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+    if(p==='pair'){while(mem.size<3)mem.add(ri(6,49)*2);do out=ri(6,98)|1;while(false);name='pairs';why=`${out} est impair`}
+    if(p==='m5'){while(mem.size<3)mem.add(ri(3,19)*5);do out=ri(16,99);while(out%5===0);name='des multiples de 5';why=`${out} ne finit ni par 0 ni par 5`}
+    if(p==='mk'){const k=pick(L===2?[3,4,6,7]:[7,8,9,12]);while(mem.size<3)mem.add(ri(3,Math.floor(99/k))*k);do out=ri(20,99);while(out%k===0);name=`des multiples de ${k}`;why=`${out} = ${k} × ${Math.floor(out/k)} + ${out%k}`}
+    if(p==='carre'){const sq=shuffle([16,25,36,49,64,81,100,121,144]);sq.slice(0,3).forEach(x=>mem.add(x));out=pick([24,48,50,63,80,99,120,90]);name='des carrés parfaits';why=`${out} n'est le carré d'aucun nombre entier`}
+    if(p==='premier'){shuffle(primes).slice(0,3).forEach(x=>mem.add(x));out=pick([21,27,33,39,49,51,57,63,69,77,81,87,91,93]);const d=[3,7,13].find(d=>out%d===0);name='des nombres premiers';why=`${out} = ${d} × ${out/d}`}
+    if(p==='somme'){const s=pick([10,12]);while(mem.size<3){const a=ri(Math.max(1,s-9),9);mem.add(a*10+(s-a))}do out=ri(19,98);while([...String(out)].reduce((x,y)=>x+ +y,0)===s||mem.has(out));name=`des nombres dont les chiffres font ${s} au total`;why=`les chiffres de ${out} font ${[...String(out)].reduce((x,y)=>x+ +y,0)}`}
+    const m=[...mem];
+    return {cat:'Intrus',q:'Quel nombre est l’intrus ?',input:'mcq',ans:String(out),opts:m.map(String),expl:`${m.join(', ')} sont ${name}. ${why[0].toUpperCase()+why.slice(1)}.`};
+  },
+  ordre(L){
+    const n=L===1?3:L===2?4:5;const names=shuffle(['Léa','Hugo','Inès','Nathan','Jade','Tom','Zoé','Malik']).slice(0,n);
+    const rel=[];for(let i=0;i<n-1;i++)rel.push(Math.random()<.5?`${names[i]} arrive avant ${names[i+1]}.`:`${names[i+1]} arrive après ${names[i]}.`);
+    let ask,ans;
+    if(L<3){[ask,ans]=Math.random()<.5?['en dernier',names[n-1]]:['en premier',names[0]]}
+    else{[ask,ans]=Math.random()<.5?['en 2e position',names[1]]:['en avant-dernier',names[n-2]]}
+    const opts=shuffle(names.filter(x=>x!==ans)).slice(0,3);
+    return {cat:'Déduction',q:`Course entre amis. Qui arrive ${ask} ?`,facts:shuffle(rel).join('<br>'),input:'mcq',ans,opts,expl:`Ordre d’arrivée : ${names.join(' → ')}.`};
+  },
+  code(L){
+    const W=['CHAT','LOUP','VELO','PAIN','LUNE','FLEUR','TIGRE','MONDE','PLAGE','ROUTE','NUAGE','SUCRE','PIANO','ROBOT','SAPIN','LIVRE','POMME','CRABE'];
+    const [w1,w2]=shuffle(W);const k=L===1?1:L===2?pick([2,3]):pick([-1,-2,4]);
+    const enc=(w,s)=>[...w].map(c=>String.fromCharCode((c.charCodeAt(0)-65+s+26*3)%26+65)).join('');
+    const ans=enc(w2,k);const alt=ans.slice(0,-1)+enc(ans.at(-1),1);
+    const opts=[...new Set([enc(w2,k+1),enc(w2,-k),alt].filter(x=>x!==ans))].slice(0,3);
+    const dir=k>0?`avance de ${k}`:`recule de ${-k}`;
+    return {cat:'Codes',q:`Dans ce code, ${w1} devient ${enc(w1,k)}. Que devient ${w2} ?`,input:'mcq',ans,opts,expl:`Chaque lettre ${dir} dans l’alphabet (${w1[0]} → ${enc(w1[0],k)}). ${w2} devient donc ${ans}.`};
+  },
+  heure(L){
+    const h=ri(6,21);let m=ri(0,11)*5,dh=ri(1,4),dm=ri(1,11)*5,sign=1;
+    if(L===2){m=ri(4,11)*5;dm=ri((60-m)/5,11)*5}
+    if(L===3){sign=pick([1,-1]);dh=ri(2,9)}
+    const tot=((h*60+m+sign*(dh*60+dm))%1440+1440)%1440;
+    const f=t=>{t=(t%1440+1440)%1440;return `${Math.floor(t/60)} h ${String(t%60).padStart(2,'0')}`};
+    const opts=[f(tot+10),f(tot-60),f(tot+60),f(tot-10)];
+    return {cat:'Temps',q:`Il est ${f(h*60+m)}. Quelle heure était-il ou sera-t-il ${sign>0?'dans':'il y a'} ${dh} h ${String(dm).padStart(2,'0')} ?`.replace('était-il ou sera-t-il',sign>0?'sera-t-il':'était-il'),input:'mcq',ans:f(tot),opts:shuffle(opts).slice(0,3),expl:`${f(h*60+m)} ${sign>0?'+':'−'} ${dh} h = ${f(h*60+m+sign*dh*60)}, puis ${sign>0?'+':'−'} ${dm} min = ${f(tot)}.`};
+  },
+  syllo(){
+    const N=shuffle(['blip','zorg','flak','trum','vop','glim','nark','spoul']).slice(0,3);const [A,B,C]=N;const P=x=>x+'s';
+    const T=pick([
+      {f:[`Tous les ${P(A)} sont des ${P(B)}.`,`Tous les ${P(B)} sont des ${P(C)}.`],a:`Tous les ${P(A)} sont des ${P(C)}.`,o:[`Tous les ${P(C)} sont des ${P(A)}.`,`Aucun ${A} n’est un ${C}.`,`Rien de certain sur ${P(A)} et ${P(C)}.`],e:`Les ${P(A)} sont inclus dans les ${P(B)}, eux-mêmes inclus dans les ${P(C)}. Donc tous les ${P(A)} sont des ${P(C)}. L’inverse n’est pas garanti.`},
+      {f:[`Tous les ${P(A)} sont des ${P(B)}.`,`Certains ${P(B)} sont des ${P(C)}.`],a:`Rien de certain sur ${P(A)} et ${P(C)}.`,o:[`Certains ${P(A)} sont des ${P(C)}.`,`Tous les ${P(A)} sont des ${P(C)}.`,`Aucun ${A} n’est un ${C}.`],e:`Les ${P(B)} qui sont des ${P(C)} ne sont pas forcément des ${P(A)}. On ne peut rien conclure entre ${P(A)} et ${P(C)}.`},
+      {f:[`Aucun ${A} n’est un ${B}.`,`Tous les ${P(C)} sont des ${P(A)}.`],a:`Aucun ${C} n’est un ${B}.`,o:[`Certains ${P(C)} sont des ${P(B)}.`,`Tous les ${P(A)} sont des ${P(C)}.`,`Rien de certain sur ${P(C)} et ${P(B)}.`],e:`Les ${P(C)} sont tous des ${P(A)}, et aucun ${A} n’est un ${B}. Donc aucun ${C} ne peut être un ${B}.`},
+      {f:[`Certains ${P(A)} sont des ${P(B)}.`,`Tous les ${P(B)} sont des ${P(C)}.`],a:`Certains ${P(A)} sont des ${P(C)}.`,o:[`Tous les ${P(A)} sont des ${P(C)}.`,`Tous les ${P(C)} sont des ${P(A)}.`,`Aucun ${A} n’est un ${C}.`],e:`Les ${P(A)} qui sont des ${P(B)} sont forcément des ${P(C)}. Donc au moins certains ${P(A)} sont des ${P(C)}.`}
+    ]);
+    return {cat:'Raisonnement',q:'Que peut-on conclure avec certitude ?',facts:T.f.join('<br>'),input:'mcq',one:true,ans:T.a,opts:T.o,expl:T.e};
+  }
+};
+const GEN_KEYS=Object.keys(GEN);
+
+/* ========== État ========== */
+const S={points:store.get('lk-points',0),best:store.get('lk-best',0),level:store.get('lk-level',1),streak:0,recent:[],lastGen:null};
+const feed=document.getElementById('feed');
+let cards=[],active=0,tickT=null;
+
+function hud(){
+  document.getElementById('streak').textContent=S.streak;
+  document.getElementById('points').textContent=fmt(S.points);
+  document.getElementById('streakPill').classList.toggle('hot',S.streak>=3);
+  document.querySelectorAll('#lvl b').forEach((b,i)=>b.classList.toggle('on',i<S.level));
+}
+function save(){store.set('lk-points',S.points);store.set('lk-best',S.best);store.set('lk-level',S.level)}
+
+/* ========== Cartes ========== */
+function newPuzzle(){
+  let k;do k=pick(GEN_KEYS);while(k===S.lastGen);S.lastGen=k;
+  return GEN[k](S.level);
+}
+function welcome(){
+  const el=document.createElement('section');el.className='card welcome';
+  el.innerHTML=`<div class="inner"><h1>Réfléchis vite.<br><em>Enchaîne.</em></h1><p>Une énigme par écran : suites, calcul de tête, grilles, déduction, codes. La difficulté s’adapte à toi.</p>
+  <div class="how"><div><span>✍️</span>Réponds : si c’est juste, l’énigme suivante arrive.</div><div><span>💡</span>Si c’est faux, tu vois l’explication.</div><div><span>👆</span>Glisse vers le haut pour passer quand tu veux.</div></div>
+  <div class="swipe">↑ Glisse pour commencer</div>${S.best?`<p class="best">Ta meilleure série : 🔥 ${S.best}</p>`:''}</div>`;
+  feed.appendChild(el);cards.push({el,welcome:true});
+}
+function addCard(){
+  const p=newPuzzle();const el=document.createElement('section');el.className='card';
+  const c={el,p,done:false,input:'',t0:0,elapsed:0};
+  el.innerHTML=`<div class="inner"><div class="meta"><span class="chip">${p.cat}</span><span class="clock">0 s</span></div>
+    <div class="q">${p.q}</div>${p.facts?`<div class="facts">${p.facts}</div>`:''}${p.fig||''}<div class="spacer"></div><div class="zone"></div></div>`;
+  feed.appendChild(el);cards.push(c);renderInput(c);
+}
+function renderInput(c){
+  const z=c.el.querySelector('.zone'),p=c.p;
+  if(p.input==='pad'){
+    z.innerHTML=`<div class="screen"></div><div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}<button data-k="del" aria-label="Effacer">⌫</button><button data-k="0">0</button><button data-k="ok" class="ok" aria-label="Valider">✓</button></div>`;
+    z.querySelector('.pad').addEventListener('click',e=>{
+      const b=e.target.closest('button');if(!b||c.done)return;const k=b.dataset.k;
+      if(k==='del')c.input=c.input.slice(0,-1);
+      else if(k==='ok'){if(c.input)check(c,Number(c.input)===p.ans,c.input);return}
+      else if(c.input.length<6)c.input+=k;
+      z.querySelector('.screen').textContent=c.input;
+    });
+  }else{
+    const all=shuffle([{v:p.ans,ok:true},...p.opts.map(v=>({v,ok:false}))]);
+    z.innerHTML=`<div class="opts${p.one?' one':''}">${all.map((o,i)=>`<button class="opt${p.svg?' svg':''}" data-i="${i}">${o.v}</button>`).join('')}</div>`;
+    z.querySelector('.opts').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b||c.done)return;const o=all[+b.dataset.i];check(c,o.ok,o.v)});
+  }
+}
+
+/* ========== Réponse ========== */
+function check(c,ok,given){
+  c.done=true;const sec=Math.round((Date.now()-c.t0)/1000);const z=c.el.querySelector('.zone');
+  S.recent.push(ok);if(S.recent.length>6)S.recent.shift();
+  if(ok){
+    const gain=10*S.level+Math.max(0,10-Math.floor(sec/3));
+    S.points+=gain;S.streak++;S.best=Math.max(S.best,S.streak);
+    z.innerHTML=`<div class="fb good">✓ Bien vu · +${gain}<small>${sec} s${S.streak>=3?` · série de ${S.streak} 🔥`:''}</small></div>`;
+    setTimeout(()=>{if(cards[active]===c)go(active+1)},850);
+  }else{
+    S.streak=0;
+    const shown=c.p.svg?`<span class="mini">${c.p.ans}</span>`:`<span>${c.p.ans}</span>`;
+    z.innerHTML=`<div class="fb bad"><div class="t">Pas tout à fait</div><div class="ans">Bonne réponse : ${shown}</div><p>${c.p.expl}</p></div><button class="next">Énigme suivante ↓</button>`;
+    z.querySelector('.next').onclick=()=>go(active+1);
+  }
+  adapt();hud();save();
+}
+function adapt(){
+  if(S.recent.length<6)return;
+  const good=S.recent.filter(Boolean).length;
+  if(good>=5&&S.level<3){S.level++;S.recent=[]}
+  else if(good<=2&&S.level>1){S.level--;S.recent=[]}
+}
+
+/* ========== Défilement ========== */
+function go(i){feed.scrollTo({top:i*feed.clientHeight,behavior:'smooth'})}
+function onActive(i){
+  if(i===active&&cards[i]?.t0)return;
+  active=i;const c=cards[i];
+  if(c&&!c.welcome&&!c.done&&!c.t0)c.t0=Date.now();
+  while(cards.length-active<4)addCard();
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const i=cards.findIndex(c=>c.el===e.target);if(i>=0)onActive(i)}}),{root:feed,threshold:.6});
+const obs=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>io.observe(n))));
+obs.observe(feed,{childList:true});
+setInterval(()=>{const c=cards[active];if(c&&!c.welcome&&!c.done&&c.t0)c.el.querySelector('.clock').textContent=Math.floor((Date.now()-c.t0)/1000)+' s'},500);
+
+welcome();for(let i=0;i<4;i++)addCard();hud();
+</script>
+</body>
+</html>

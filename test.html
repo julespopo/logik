@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logik — le test de logique</title>
+<meta name="description" content="21 énigmes, 12 minutes. Mesure ta logique numérique, spatiale, verbale et déductive.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f2ea;--card:#fffdf8;--ink:#17161c;--muted:#6b6874;--line:#e3ded2;
+  --accent:#4b2ef0;--accent-soft:#e9e5ff;--good:#1f8a5b;--bad:#c8452f;--gold:#f2b632;
+  --r:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:560px;margin:0 auto;padding:20px 18px 40px;min-height:100dvh;display:flex;flex-direction:column}
+h1,h2,h3,.display{font-family:"Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.02em;margin:0}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+.brand{display:flex;align-items:center;gap:8px;font:800 22px "Bricolage Grotesque",sans-serif;margin-bottom:28px}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.on{display:flex}
+
+/* Intro */
+.hero h1{font-size:clamp(40px,11vw,58px);line-height:.98;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);font-size:17px;margin:16px 0 24px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px}
+.facts div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center}
+.facts b{display:block;font:800 24px "Bricolage Grotesque",sans-serif}
+.facts span{font-size:12px;color:var(--muted)}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:28px}
+.chip{font-size:13px;padding:6px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.primary{width:100%;border:0;border-radius:16px;background:var(--ink);color:#fff;padding:18px;font-weight:600;font-size:17px;min-height:58px}
+.primary:active{transform:scale(.985)}
+.price-note{font-size:13px;color:var(--muted);text-align:center;margin:12px 0 0}
+.disclaimer{font-size:12px;color:var(--muted);line-height:1.5;margin-top:auto;padding-top:28px}
+
+/* Quiz */
+.qtop{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);margin-bottom:10px}
+.timer{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+.timer.low{color:var(--bad)}
+.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:26px}
+.bar span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.qcat{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.qtext{font:700 23px/1.25 "Bricolage Grotesque",sans-serif;margin-bottom:18px}
+.seq{font:800 28px "Bricolage Grotesque",sans-serif;letter-spacing:.02em;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;text-align:center;margin-bottom:18px;word-spacing:4px}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:0 auto 18px;max-width:300px}
+.matrix>div{aspect-ratio:1;border-radius:10px;background:var(--bg);display:grid;place-items:center}
+.matrix .missing{border:2px dashed var(--accent);background:var(--accent-soft);color:var(--accent);font:800 28px "Bricolage Grotesque",sans-serif}
+.strip{display:flex;gap:6px;justify-content:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;margin-bottom:18px}
+.strip>div{width:62px;aspect-ratio:1;border-radius:10px;background:var(--bg);display:grid;place-items:center}
+.strip .missing{border:2px dashed var(--accent);background:var(--accent-soft);color:var(--accent);font:800 24px "Bricolage Grotesque",sans-serif}
+svg.g{width:100%;height:100%;max-width:70px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts.single{grid-template-columns:1fr}
+.opt{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px 12px;min-height:62px;font-weight:600;font-size:17px;text-align:center;display:grid;place-items:center;transition:border-color .15s,background .15s}
+.opt.svg{padding:8px;aspect-ratio:1.3}
+.opt:active,.opt.picked{border-color:var(--accent);background:var(--accent-soft)}
+.skip{margin:18px auto 0;background:none;border:0;color:var(--muted);font-size:14px;text-decoration:underline;padding:10px}
+
+/* Result */
+.score-card{background:var(--ink);color:#fff;border-radius:24px;padding:28px 22px;text-align:center;position:relative;overflow:hidden}
+.score-card:before{content:"";position:absolute;inset:-40% -20% auto auto;width:260px;height:260px;border-radius:50%;background:var(--accent);opacity:.55;filter:blur(30px)}
+.score-card>*{position:relative}
+.score-card small{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.score{font:800 96px/1 "Bricolage Grotesque",sans-serif;margin:8px 0 4px}
+.tier{font:700 20px "Bricolage Grotesque",sans-serif;color:var(--gold)}
+.score-card p{opacity:.75;font-size:14px;margin:10px 0 0}
+.row-btns{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0 26px}
+.ghost{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:15px;font-weight:600;min-height:54px}
+.locked{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;overflow:hidden}
+.locked h3{font-size:22px;margin-bottom:4px}
+.locked .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+.blur{filter:blur(6px);user-select:none;pointer-events:none}
+.cat-row{margin-bottom:14px}
+.cat-row .top{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px}
+.cat-row .track{height:10px;background:var(--line);border-radius:9px;overflow:hidden}
+.cat-row .track span{display:block;height:100%;background:var(--accent);border-radius:9px}
+.unlock{margin-top:18px}
+.unlock ul{padding-left:18px;margin:0 0 16px;font-size:14px;color:var(--muted)}
+.unlock li{margin-bottom:4px}
+.demo{display:block;margin:12px auto 0;background:none;border:0;color:var(--accent);font-size:13px;text-decoration:underline}
+.profile{background:var(--accent-soft);border-radius:var(--r);padding:18px;margin:18px 0}
+.profile b{font:800 22px "Bricolage Grotesque",sans-serif;color:var(--accent);display:block;margin-bottom:4px}
+.profile p{margin:0;font-size:15px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.stat-grid div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat-grid b{font:800 26px "Bricolage Grotesque",sans-serif;display:block}
+.stat-grid span{font-size:12px;color:var(--muted)}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--good);border-radius:12px;padding:14px}
+.rv.ko{border-left-color:var(--bad)}
+.rv .h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.rv .q{font-weight:600;margin:4px 0 6px}
+.rv .e{font-size:14px;color:var(--muted);margin:0}
+.rv .ans{font-size:14px;margin:0 0 4px}
+h2.section{font-size:24px;margin:26px 0 12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.restart{margin:22px auto 0;background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px;padding:10px}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><i>◆</i>logik</div>
+
+  <!-- INTRO -->
+  <section class="screen on" id="intro">
+    <div class="hero">
+      <h1>Ta logique,<br><em>chiffrée.</em></h1>
+      <p>21 énigmes de suites, de formes, de mots et de déduction. Tu as 12 minutes. Personne n'a encore fait le sans-faute du premier coup.</p>
+    </div>
+    <div class="facts">
+      <div><b>21</b><span>énigmes</span></div>
+      <div><b>12</b><span>minutes</span></div>
+      <div><b>4</b><span>aptitudes</span></div>
+    </div>
+    <div class="cats">
+      <span class="chip">Numérique</span><span class="chip">Spatial</span><span class="chip">Verbal</span><span class="chip">Déduction</span>
+    </div>
+    <button class="primary" id="startBtn">Commencer le test</button>
+    <p class="price-note">Test et score gratuits. Rapport détaillé en option : <span class="priceLabel"></span>.</p>
+    <p class="disclaimer">Logik est un jeu de logique. Son score n'est pas étalonné : ce n'est pas un test de QI clinique et il ne permet aucun diagnostic (HPI, TDAH…). Pour un bilan, consulte un psychologue.</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="quiz">
+    <div class="qtop"><span id="qnum"></span><span class="timer" id="timer">12:00</span></div>
+    <div class="bar"><span id="bar"></span></div>
+    <div class="qcat" id="qcat"></div>
+    <div class="qtext" id="qtext"></div>
+    <div id="qfig"></div>
+    <div class="opts" id="opts"></div>
+    <button class="skip" id="skipBtn">Passer cette question</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="result">
+    <div class="score-card">
+      <small>Ton score Logik</small>
+      <div class="score" id="score">0</div>
+      <div class="tier" id="tier"></div>
+      <p id="scoreLine"></p>
+    </div>
+    <div class="row-btns">
+      <button class="primary" id="shareBtn">Défier mes amis</button>
+    </div>
+
+    <div class="locked" id="lockedBox">
+      <h3>Ton rapport complet</h3>
+      <p class="sub">Tes 4 aptitudes, ton profil et la correction de chaque énigme.</p>
+      <div class="blur" id="teaser"></div>
+      <div class="unlock">
+        <ul>
+          <li>Ton score détaillé dans chacune des 4 aptitudes</li>
+          <li>Ton profil de raisonnement et ce qu'il dit de toi</li>
+          <li>Ta vitesse de réflexion, énigme par énigme</li>
+          <li>La solution expliquée des 21 énigmes</li>
+        </ul>
+        <button class="primary" id="payBtn">Débloquer mon rapport · <span class="priceLabel"></span></button>
+        <button class="demo" id="demoBtn" hidden>Aperçu du rapport (mode démo, paiement non configuré)</button>
+      </div>
+    </div>
+
+    <div id="report" hidden></div>
+    <p class="disclaimer">Score indicatif, non étalonné sur une population de référence. Logik ne mesure pas le QI au sens clinique et ne permet aucun diagnostic (HPI, TDAH…).</p>
+    <button class="restart" id="restartBtn">Refaire le test</button>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== Réglages ===== */
+const CONFIG = {
+  price: '2,99 €',
+  paymentLink: '',          // Lien Stripe Payment Link. Après paiement, rediriger vers : <url du site>?paid=1
+  shareUrl: location.href.split(/[?#]/)[0],
+  durationSec: 12 * 60
+};
+
+/* ===== Figures SVG ===== */
+const fillAttr = f => f ? 'fill="var(--ink)"' : 'fill="none" stroke="var(--ink)" stroke-width="3"';
+function polyPts(n, cx, cy, r){
+  let p=[]; for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));} return p.join(' ');
+}
+function shape(t, cx, cy, r, f){
+  if(t==='circle') return `<circle cx="${cx}" cy="${cy}" r="${r}" ${fillAttr(f)}/>`;
+  if(t==='square') return `<rect x="${cx-r*.85}" y="${cy-r*.85}" width="${r*1.7}" height="${r*1.7}" rx="2" ${fillAttr(f)}/>`;
+  const n = t==='triangle'?3:t;
+  return `<polygon points="${polyPts(n,cx,cy,r*(n===3?1.15:1))}" ${fillAttr(f)} stroke-linejoin="round"/>`;
+}
+const box = inner => `<svg class="g" viewBox="0 0 60 60" aria-hidden="true">${inner}</svg>`;
+function dots(n, t='circle', f=true){
+  const cols=Math.min(n,3), rows=Math.ceil(n/3), gap=18, r=n>3?6:7; let s='';
+  for(let i=0;i<n;i++){
+    const row=Math.floor(i/3), inRow=row===rows-1?n-row*3:3, col=i%3;
+    const x=30+(col-(Math.min(inRow,cols)-1)/2)*gap, y=30+(row-(rows-1)/2)*gap;
+    s+=shape(t,x,y,r,f);
+  }
+  return box(s);
+}
+const big = (t,f=false) => box(shape(t,30,30,20,f));
+const arrow = deg => box(`<g transform="rotate(${deg} 30 30)"><path d="M30 9 L45 28 H35 V51 H25 V28 H15 Z" fill="var(--ink)"/></g>`);
+const matrix = cells => `<div class="matrix">${cells.map(c=>c?`<div>${c}</div>`:'<div class="missing">?</div>').join('')}</div>`;
+const strip = cells => `<div class="strip">${cells.map(c=>c?`<div>${c}</div>`:'<div class="missing">?</div>').join('')}</div>`;
+const seq = s => `<div class="seq">${s}</div>`;
+
+/* ===== Énigmes ===== */
+const CATS = {num:'Numérique', spa:'Spatial', ver:'Verbal', ded:'Déduction'};
+const Q = [
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('2 · 6 · 12 · 20 · 30 · ?'), o:['40','42','44','36'], a:1, e:'Les écarts augmentent de 2 : +4, +6, +8, +10, puis +12. 30 + 12 = 42.'},
+  {c:'ver', q:'Pied est à chaussure comme main est à…', o:['Bras','Doigt','Gant','Bague'], a:2, e:'La chaussure couvre le pied ; le gant couvre la main.'},
+  {c:'spa', q:'Quelle case complète la grille ?', fig:matrix([dots(1),dots(2),dots(3),dots(1,'square'),dots(2,'square'),dots(3,'square'),dots(1,'triangle'),dots(2,'triangle'),null]), o:[dots(3,'triangle'),dots(2,'triangle'),dots(3,'square'),dots(4,'triangle')], svg:true, a:0, e:'Chaque ligne garde la même forme et ajoute un élément par colonne : la dernière case contient 3 triangles.'},
+  {c:'ded', q:'Anne est plus grande que Béa. Clara est plus petite que Béa. Dana est plus grande qu’Anne. Qui est la plus petite ?', o:['Anne','Béa','Clara','Dana'], a:2, e:'Classement : Dana > Anne > Béa > Clara.'},
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('7 · 10 · 8 · 11 · 9 · 12 · ?'), o:['10','13','11','8'], a:0, e:'On alterne +3 et −2. Après 12, on fait −2 : 10.'},
+  {c:'ver', q:'Quel mot est l’intrus ?', o:['Carré','Triangle','Cube','Cercle'], a:2, e:'Le cube est le seul volume ; les trois autres sont des figures planes.'},
+  {c:'spa', q:'Quelle flèche complète la grille ?', fig:matrix([arrow(0),arrow(90),arrow(180),arrow(90),arrow(180),arrow(270),arrow(180),arrow(270),null]), o:[arrow(0),arrow(90),arrow(180),arrow(270)], svg:true, a:0, e:'La flèche tourne d’un quart de tour vers la droite à chaque case, et chaque ligne commence un quart de tour plus loin. Après 270°, on revient à 0° : la flèche pointe vers le haut.'},
+  {c:'ded', q:'Une balle et sa boîte coûtent 1,10 € au total. La balle coûte 1 € de plus que la boîte. Combien coûte la boîte ?', o:['0,10 €','0,05 €','0,01 €','0,15 €'], a:1, e:'Boîte = x, balle = x + 1. Donc 2x + 1 = 1,10 et x = 0,05 €. La réponse intuitive (0,10 €) donnerait une balle à 1,10 € et un total de 1,20 €.'},
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('3 · 5 · 9 · 17 · 33 · ?'), o:['49','64','65','66'], a:2, e:'Chaque terme est le double du précédent moins 1 : 33 × 2 − 1 = 65.'},
+  {c:'ver', q:'Quelle lettre complète la suite ?', fig:seq('A · C · F · J · O · ?'), o:['T','U','V','S'], a:1, e:'Les écarts dans l’alphabet grandissent : +2, +3, +4, +5, puis +6. O (15e lettre) + 6 = U (21e).'},
+  {c:'spa', q:'Quelle forme vient ensuite ?', fig:strip([big(3),big(4),big(5),big(6),null]), o:[big(7),big(8),big(5),big(6)], svg:true, a:0, e:'Chaque forme a un côté de plus que la précédente : 3, 4, 5, 6… puis un heptagone à 7 côtés.'},
+  {c:'ded', q:'Il est 15 h. Quelle heure sera-t-il dans 50 heures ?', o:['17 h','5 h','19 h','15 h'], a:0, e:'50 h = 2 jours (48 h) + 2 h. 15 h + 2 h = 17 h.'},
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('1 · 2 · 6 · 24 · 120 · ?'), o:['600','240','720','144'], a:2, e:'On multiplie successivement par 2, 3, 4, 5, puis 6 : 120 × 6 = 720.'},
+  {c:'ver', q:'Trois mots utilisent exactement les mêmes lettres. Lequel est l’intrus ?', o:['CHIEN','NICHE','CHINE','CHAINE'], a:3, e:'CHIEN, NICHE et CHINE sont des anagrammes. CHAINE a un A en plus.'},
+  {c:'spa', q:'Quelle case complète la grille ?', fig:matrix([big('circle'),big('square'),big('triangle',true),big('square'),big('triangle'),big('circle',true),big('triangle'),big('circle'),null]), o:[big('square',true),big('square'),big('circle',true),big('triangle',true)], svg:true, a:0, e:'Chaque ligne contient un cercle, un carré et un triangle, et la 3e colonne est toujours pleine : il manque un carré plein.'},
+  {c:'ded', q:'Si 5 machines fabriquent 5 pièces en 5 minutes, combien de temps faut-il à 100 machines pour fabriquer 100 pièces ?', o:['100 minutes','20 minutes','5 minutes','1 minute'], a:2, e:'Chaque machine fabrique 1 pièce en 5 minutes. 100 machines font donc 100 pièces en 5 minutes.'},
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('4 · 9 · 19 · 39 · ?'), o:['78','79','80','59'], a:1, e:'Chaque terme est le double du précédent plus 1 : 39 × 2 + 1 = 79.'},
+  {c:'ver', q:'Si CHAT s’écrit 3-8-1-20, comment s’écrit CHIEN ?', o:['3-8-9-5-14','3-8-9-14-5','3-7-9-5-14','3-8-10-5-14'], a:0, e:'Chaque lettre est remplacée par son rang dans l’alphabet : C=3, H=8, I=9, E=5, N=14.'},
+  {c:'spa', q:'Quelle case complète la grille ?', fig:matrix([dots(1),dots(2),dots(3),dots(2),dots(3),dots(4),dots(3),dots(4),null]), o:[dots(4),dots(6),dots(5),dots(3)], svg:true, a:2, e:'Le nombre de points augmente de 1 vers la droite et de 1 vers le bas : la dernière case en a 5.'},
+  {c:'ded', q:'Tous les blips sont des blops. Certains blops sont des blups. Que peut-on conclure avec certitude ?', o:['Tous les blips sont des blups','Certains blips sont des blups','Aucun blip n’est un blup','Rien de certain sur blips et blups'], single:true, a:3, e:'Les blops qui sont des blups ne sont pas forcément des blips. On ne peut donc rien conclure sur le lien entre blips et blups.'},
+  {c:'num', q:'Quel nombre complète la suite ?', fig:seq('2 · 12 · 30 · 56 · 90 · ?'), o:['120','132','126','110'], a:1, e:'1×2, 3×4, 5×6, 7×8, 9×10… puis 11×12 = 132.'}
+];
+
+/* ===== État ===== */
+let order=[], answers=[], idx=0, qStart=0, tStart=0, tick=null, timeUp=false;
+const $=id=>document.getElementById(id);
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)}
+document.querySelectorAll('.priceLabel').forEach(e=>e.textContent=CONFIG.price);
+
+/* ===== Test ===== */
+function start(){
+  order=Q.map(q=>shuffle(q.o.map((_,i)=>i))); answers=Q.map(()=>({pick:null,t:0}));
+  idx=0; timeUp=false; tStart=Date.now();
+  clearInterval(tick); tick=setInterval(updateTimer,250); updateTimer();
+  show('quiz'); renderQ();
+}
+function updateTimer(){
+  const left=Math.max(0,CONFIG.durationSec-Math.floor((Date.now()-tStart)/1000));
+  $('timer').textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+  $('timer').classList.toggle('low',left<=60);
+  if(left===0&&!timeUp){timeUp=true;toast('Temps écoulé !');finish()}
+}
+function renderQ(){
+  const q=Q[idx];
+  $('qnum').textContent=`Énigme ${idx+1} / ${Q.length}`;
+  $('bar').style.width=(idx/Q.length*100)+'%';
+  $('qcat').textContent=CATS[q.c];
+  $('qtext').textContent=q.q;
+  $('qfig').innerHTML=q.fig||'';
+  const o=$('opts'); o.className='opts'+(q.single?' single':'');
+  o.innerHTML=order[idx].map(i=>`<button class="opt${q.svg?' svg':''}" data-i="${i}">${q.o[i]}</button>`).join('');
+  qStart=Date.now();
+}
+function answer(pick){
+  answers[idx]={pick,t:(Date.now()-qStart)/1000};
+  if(idx<Q.length-1){idx++;renderQ()}else finish();
+}
+$('opts').addEventListener('click',e=>{
+  const b=e.target.closest('.opt'); if(!b)return;
+  b.classList.add('picked'); setTimeout(()=>answer(+b.dataset.i),140);
+});
+$('skipBtn').onclick=()=>answer(null);
+
+/* ===== Score ===== */
+function compute(ans){
+  const per={}; Object.keys(CATS).forEach(k=>per[k]={ok:0,n:0});
+  let ok=0, time=0;
+  Q.forEach((q,i)=>{per[q.c].n++; time+=ans[i].t; if(ans[i].pick===q.a){ok++;per[q.c].ok++}});
+  const score=Math.round(75+ok/Q.length*70);
+  return {ok,score,per,time:Math.round(time)};
+}
+function tier(s){
+  if(s>=138) return 'Esprit d’exception';
+  if(s>=128) return 'Logique redoutable';
+  if(s>=115) return 'Très bon raisonnement';
+  if(s>=100) return 'Bon raisonnement';
+  return 'Raisonnement en rodage';
+}
+const PROFILES={
+  num:['Le Stratège des chiffres','Tu repères les régularités cachées dans les nombres. Tu décomposes un problème en étapes et tu vérifies ton calcul avant de conclure.'],
+  spa:['L’Architecte visuel','Tu manipules les formes dans ta tête. Rotations, symétries, motifs : tu vois la structure d’ensemble avant les détails.'],
+  ver:['Le Décodeur','Les mots et les codes n’ont pas de secret pour toi. Tu trouves vite la règle qui relie des éléments en apparence éloignés.'],
+  ded:['Le Logicien','Tu te méfies des réponses intuitives. Tu poses les contraintes une par une et tu n’acceptes que ce qui est démontré.']
+};
+
+function finish(){
+  clearInterval(tick);
+  const r=compute(answers);
+  store.set('logik-last',{answers,date:Date.now()});
+  renderResult(r);
+  show('result');
+  animate($('score'),r.score);
+}
+function animate(el,to){let v=60;const step=()=>{v=Math.min(to,v+Math.max(1,Math.round((to-v)/8)));el.textContent=v;if(v<to)requestAnimationFrame(step)};step()}
+function renderResult(r){
+  $('score').textContent=r.score;
+  $('tier').textContent=tier(r.score);
+  $('scoreLine').textContent=`${r.ok} bonnes réponses sur ${Q.length} · en ${Math.floor(r.time/60)} min ${r.time%60} s`;
+  $('teaser').innerHTML=Object.keys(CATS).map(k=>`<div class="cat-row"><div class="top"><span>${CATS[k]}</span><span>??%</span></div><div class="track"><span style="width:${30+Math.random()*60}%"></span></div></div>`).join('');
+  $('demoBtn').hidden=!!CONFIG.paymentLink;
+  $('report').hidden=true; $('lockedBox').hidden=false;
+  if(new URLSearchParams(location.search).get('paid')==='1') unlock(r);
+}
+function unlock(r){
+  const best=Object.keys(CATS).sort((a,b)=>r.per[b].ok/r.per[b].n-r.per[a].ok/r.per[a].n)[0];
+  const [pname,pdesc]=PROFILES[best];
+  const fr=x=>x.toFixed(1).replace('.',',');const avg=fr(r.time/Q.length);
+  const fastest=fr(Math.min(...answers.map(a=>a.t)));
+  let h=`<h2 class="section">Tes aptitudes</h2>`;
+  h+=Object.keys(CATS).map(k=>{const p=Math.round(r.per[k].ok/r.per[k].n*100);return `<div class="cat-row"><div class="top"><span>${CATS[k]}</span><span>${r.per[k].ok}/${r.per[k].n} · ${p} %</span></div><div class="track"><span style="width:${p}%"></span></div></div>`}).join('');
+  h+=`<div class="profile"><b>${pname}</b><p>${pdesc}</p></div>`;
+  h+=`<div class="stat-grid"><div><b>${avg} s</b><span>temps moyen par énigme</span></div><div><b>${fastest} s</b><span>ta réponse la plus rapide</span></div></div>`;
+  h+=`<h2 class="section">La correction</h2><div class="review">`;
+  h+=Q.map((q,i)=>{const a=answers[i],ok=a.pick===q.a;const lbl=v=>q.svg?'(figure)':v;
+    return `<div class="rv${ok?'':' ko'}"><div class="h">${i+1}. ${CATS[q.c]} · ${ok?'Réussie':(a.pick===null?'Passée':'Ratée')} · ${fr(a.t)} s</div><div class="q">${q.q}</div>${q.fig?`<div style="max-width:260px;margin-top:8px">${q.fig}</div>`:''}${!ok&&a.pick!==null&&!q.svg?`<p class="ans">Ta réponse : ${q.o[a.pick]}</p>`:''}<p class="ans"><b>Bonne réponse : ${q.svg?'':q.o[q.a]}</b></p>${q.svg?`<div style="width:70px;height:70px">${q.o[q.a]}</div>`:''}<p class="e">${q.e}</p></div>`}).join('');
+  h+=`</div>`;
+  $('report').innerHTML=h; $('report').hidden=false; $('lockedBox').hidden=true; $('report').scrollIntoView({behavior:'smooth'});
+}
+
+/* ===== Boutons ===== */
+$('startBtn').onclick=start;
+$('restartBtn').onclick=()=>{show('intro')};
+$('payBtn').onclick=()=>{
+  if(!CONFIG.paymentLink){toast('Paiement pas encore configuré.');return}
+  location.href=CONFIG.paymentLink;
+};
+$('demoBtn').onclick=()=>unlock(compute(answers));
+$('shareBtn').onclick=async()=>{
+  const s=$('score').textContent;
+  const text=`J’ai fait ${s} au test Logik 🧠 (${tier(+s)}). Tu fais mieux ?`;
+  try{ if(navigator.share){await navigator.share({title:'Logik',text,url:CONFIG.shareUrl});return} }catch(e){if(e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(text+' '+CONFIG.shareUrl);toast('Message copié : colle-le où tu veux !')}catch{toast(text)}
+};
+
+/* Retour après paiement Stripe : réafficher le dernier résultat */
+if(new URLSearchParams(location.search).get('paid')==='1'){
+  const last=store.get('logik-last');
+  if(last){answers=last.answers;const r=compute(answers);renderResult(r);show('result');}
+}
+</script>
+</body>
+</html>
